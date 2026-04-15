@@ -5,13 +5,24 @@ from models import Base, Group, User, Availability
 from schemas import GroupCreate, UserCreate, AvailabilityCreate
 import re
 
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
+
+
 Base.metadata.create_all(bind=engine)
+
+
+templates = Jinja2Templates(directory="templates")
 
 app = FastAPI()
 
 @app.get("/")
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"request": request}
+    )
 
 @app.get("/health")
 def read_health():
