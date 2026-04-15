@@ -93,6 +93,22 @@ async def get_display_best_times(request: Request):
     groups = db.query(Group).all()
     return templates.TemplateResponse("display_best_times.html", {"request": request, "groups": groups})
 
+@app.post("/groups/join")
+async def join_group(display_name: str = Form(...), invite_code: str = Form(...), db: Session = Depends(get_db)):
+    group = db.query(Group).filter(Group.name == invite_code).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Invalid invite code")
+    
+    db_user = User(username=display_name, group_id=group.id)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    return {
+        "group": {"id": group.id, "name": group.name},
+        "user": {"id": db_user.id, "username": db_user.username}
+    }
+
 def parse_time_slots(availability_str):
     time_slots = []
     for match in re.finditer(r'(\d{2}:\d{2})-(\d{2}:\d{2})', availability_str):
