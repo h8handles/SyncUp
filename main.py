@@ -19,8 +19,9 @@ app = FastAPI()
 @app.get("/")
 async def read_root(request: Request):
     return templates.TemplateResponse(
-        name="index.html",
-        context={"request": request}
+        request,
+        "index.html",
+        {"request": request}
     )
 
 @app.get("/health")
@@ -38,8 +39,9 @@ def create_group(group: GroupCreate, db: Session = Depends(get_db)):
 @app.get("/create-group")
 async def get_create_group(request: Request):
     return templates.TemplateResponse(
-        name="create_group.html",
-        context={"request": request}
+        request,
+        "create_group.html",
+        {"request": request}
     )
 
 @app.post("/groups/")
@@ -54,8 +56,9 @@ async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)
 async def get_add_member(request: Request):
     groups = db.query(Group).all()
     return templates.TemplateResponse(
-        name="add_member.html",
-        context={"request": request, "groups": groups}
+        request,
+        "add_member.html",
+        {"request": request, "groups": groups}
     )
 
 @app.post("/users/")
@@ -70,8 +73,9 @@ async def post_add_member(username: str = Form(...), group_id: int = Form(...), 
 async def get_submit_availability(request: Request):
     users = db.query(User).all()
     return templates.TemplateResponse(
-        name="submit_availability.html",
-        context={"request": request, "users": users}
+        request,
+        "submit_availability.html",
+        {"request": request, "users": users}
     )
 
 @app.post("/availabilities/")
@@ -115,8 +119,9 @@ def get_best_times(group_id: int, db: Session = Depends(get_db)):
 async def get_display_best_times(request: Request):
     groups = db.query(Group).all()
     return templates.TemplateResponse(
-        name="display_best_times.html",
-        context={"request": request, "groups": groups}
+        request,
+        "display_best_times.html",
+        {"request": request, "groups": groups}
     )
 
 @app.post("/groups/join")
