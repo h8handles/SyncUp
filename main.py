@@ -1,28 +1,14 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, Form
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, RedirectResponse
 from sqlalchemy.orm import Session
-from database import engine, get_db
-from models import Base, Group, User, Availability
-from schemas import GroupCreate, UserCreate, AvailabilityCreate
-import re
-
-from fastapi.templating import Jinja2Templates
-from fastapi import Request
-
-
-Base.metadata.create_all(bind=engine)
-
-
-templates = Jinja2Templates(directory="templates")
+from .database import get_db
+from .models import Group
+from .schemas import GroupCreate
 
 app = FastAPI()
 
 @app.get("/")
 async def read_root(request: Request):
-    return templates.TemplateResponse(
-        request,
-        "index.html",
-        {"request": request}
-    )
+    return {"request": request}
 
 @app.get("/health")
 def read_health():
@@ -38,28 +24,23 @@ def create_group(group: GroupCreate, db: Session = Depends(get_db)):
 
 @app.get("/create-group")
 async def get_create_group(request: Request):
-    return templates.TemplateResponse(
-        request,
-        "create_group.html",
-        {"request": request}
-    )
+    return {"request": request}
 
-@app.post("/groups/")
+@app.post("/create-group")  # Add this new route
 async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)):
-    db_group = Group(name=name)
-    db.add(db_group)
-    db.commit()
-    db.refresh(db_group)
-    return {"status": "Group created successfully"}
+    try:
+        new_group = Group(name=name, invite_code="generate_invite_code_here")  # Replace "generate_invite_code_here" with actual logic to generate invite code
+        db.add(new_group)
+        db.commit()
+        db.refresh(new_group)
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @app.get("/add-member")
 async def get_add_member(request: Request):
     groups = db.query(Group).all()
-    return templates.TemplateResponse(
-        request,
-        "add_member.html",
-        {"request": request, "groups": groups}
-    )
+    return {"request": request, "groups": groups}
 
 @app.post("/users/")
 async def post_add_member(username: str = Form(...), group_id: int = Form(...), db: Session = Depends(get_db)):
@@ -72,11 +53,7 @@ async def post_add_member(username: str = Form(...), group_id: int = Form(...), 
 @app.get("/submit-availability")
 async def get_submit_availability(request: Request):
     users = db.query(User).all()
-    return templates.TemplateResponse(
-        request,
-        "submit_availability.html",
-        {"request": request, "users": users}
-    )
+    return {"request": request, "users": users}
 
 @app.post("/availabilities/")
 async def post_submit_availability(user_id: int = Form(...), availability: str = Form(...), db: Session = Depends(get_db)):
@@ -118,11 +95,7 @@ def get_best_times(group_id: int, db: Session = Depends(get_db)):
 @app.get("/display-best-times")
 async def get_display_best_times(request: Request):
     groups = db.query(Group).all()
-    return templates.TemplateResponse(
-        request,
-        "display_best_times.html",
-        {"request": request, "groups": groups}
-    )
+    return {"request": request, "groups": groups}
 
 @app.post("/groups/join")
 async def join_group(display_name: str = Form(...), invite_code: str = Form(...), db: Session = Depends(get_db)):
