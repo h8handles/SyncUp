@@ -111,8 +111,25 @@ async def get_display_best_times(request: Request, db: Session = Depends(get_db)
     groups = db.query(Group).all()
     return templates.TemplateResponse(request, "display_best_times.html", {"request": request, "groups": groups})
 
+@app.get("/groups/join")
+async def get_join_group(request: Request):
+    """Render the join group form page."""
+    return templates.TemplateResponse(
+        request,
+        "join_group.html",
+        {"request": request}
+    )
+
 @app.post("/groups/join")
-async def join_group(display_name: str = Form(...), invite_code: str = Form(...), db: Session = Depends(get_db)):
+async def join_group(
+    request: Request,  # Add request parameter
+    display_name: str = Form(...),
+    invite_code: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Handle join form submission and re-render the page on invalid invite codes.
+    """
     group = db.query(Group).filter(Group.invite_code == invite_code).first()
     if not group:
         return templates.TemplateResponse(request, "join_group.html", {"request": request, "error": "Invalid invite code"})
