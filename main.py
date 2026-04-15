@@ -1,15 +1,21 @@
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from database import get_db
-from models import Group
+from database import engine, get_db
+from models import Base, Group, User, Availability
 from schemas import GroupCreate
+from jinja2 import Jinja2Templates
+import re
+
+Base.metadata.create_all(bind=engine)
+
+templates = Jinja2Templates(directory="templates")
 
 app = FastAPI()
 
 @app.get("/")
 async def read_root(request: Request):
-    return {"request": request}
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/health")
 def read_health():
@@ -25,7 +31,7 @@ def create_group(group: GroupCreate, db: Session = Depends(get_db)):
 
 @app.get("/create-group")
 async def get_create_group(request: Request):
-    return {"request": request}
+    return templates.TemplateResponse("create_group.html", {"request": request})
 
 @app.post("/create-group")  # Ensure this route is correctly defined
 async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)):
@@ -39,9 +45,9 @@ async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @app.get("/add-member")
-async def get_add_member(request: Request):
+async def get_add_member(request: Request, db: Session = Depends(get_db)):
     groups = db.query(Group).all()
-    return {"request": request, "groups": groups}
+    return templates.TemplateResponse("add_member.html", {"request": request, "groups": groups})
 
 @app.post("/users/")
 async def post_add_member(username: str = Form(...), group_id: int = Form(...), db: Session = Depends(get_db)):
@@ -52,9 +58,9 @@ async def post_add_member(username: str = Form(...), group_id: int = Form(...), 
     return {"status": "User added successfully"}
 
 @app.get("/submit-availability")
-async def get_submit_availability(request: Request):
+async def get_submit_availability(request: Request, db: Session = Depends(get_db)):
     users = db.query(User).all()
-    return {"request": request, "users": users}
+    return templates.TemplateResponse("submit_availability.html", {"request": request, "users": users})
 
 @app.post("/availabilities/")
 async def post_submit_availability(user_id: int = Form(...), availability: str = Form(...), db: Session = Depends(get_db)):
@@ -94,9 +100,9 @@ def get_best_times(group_id: int, db: Session = Depends(get_db)):
     return {"best_times": best_times}
 
 @app.get("/display-best-times")
-async def get_display_best_times(request: Request):
+async def get_display_best_times(request: Request, db: Session = Depends(get_db)):
     groups = db.query(Group).all()
-    return {"request": request, "groups": groups}
+    return templates.TemplateResponse("display_best_times.html", {"request": request, "groups": groups})
 
 @app.post("/groups/join")
 async def join_group(display_name: str = Form(...), invite_code: str = Form(...), db: Session = Depends(get_db)):
