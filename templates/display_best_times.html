@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Display Best Overlap Times</h1>
+<form method="get" action="/groups/{group_id}/best-times">
+    <label for="group_id">Group:</label>
+    <select id="group_id" name="group_id" required>
+        {% for group in groups %}
+        <option value="{{ group.id }}">{{ group.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Get Best Times</button>
+</form>
+
+{% if best_times %}
+<h2>Best Overlap Times:</h2>
+<ul>
+    {% for time in best_times %}
+    <li>{{ time.timeslot }} - Users Available: {{ time.users_available }}, Attendance Score: {{ time.attendance_score }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

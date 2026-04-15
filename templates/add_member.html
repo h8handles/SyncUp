@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add Member</h1>
+<form method="post">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required>
+    <label for="group_id">Group:</label>
+    <select id="group_id" name="group_id" required>
+        {% for group in groups %}
+        <option value="{{ group.id }}">{{ group.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Add Member</button>
+</form>
+{% endblock %}

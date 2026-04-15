@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Submit Availability</h1>
+<form method="post">
+    <label for="user_id">User:</label>
+    <select id="user_id" name="user_id" required>
+        {% for user in users %}
+        <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+    <label for="availability">Availability (e.g., 09:00-12:00, 14:00-18:00):</label>
+    <input type="text" id="availability" name="availability" required>
+    <button type="submit">Submit Availability</button>
+</form>
+{% endblock %}
