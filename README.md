@@ -23,3 +23,5 @@ Early MVP baseline committed and stable
 
 ## Local Run Instructions
 To run the application locally, execute the following command:
+
+`python -m uvicorn main:app --reload `
