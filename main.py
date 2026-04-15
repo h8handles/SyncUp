@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, RedirectResponse
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from .database import get_db
-from .models import Group
-from .schemas import GroupCreate
+from database import get_db
+from models import Group, User, Availability
+from schemas import GroupCreate
 
 app = FastAPI()
 
