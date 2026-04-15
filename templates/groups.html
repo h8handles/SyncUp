@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Group Listing</h1>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Invite Code</th>
+        <th>Best Times</th>
+    </tr>
+    {% for group in groups %}
+    <tr>
+        <td>{{ group.id }}</td>
+        <td>{{ group.name }}</td>
+        <td>{{ group.invite_code }}</td>
+        <td><a href="/groups/{{ group.id }}/best-times" style="text-decoration: none; color: black;">View Best Times</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div style="margin-top: 20px;">
+    <a href="/" style="text-decoration: none; color: black;">
+        <button>Back to Home</button>
+    </a>
+</div>
+{% endblock %}

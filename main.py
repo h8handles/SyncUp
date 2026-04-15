@@ -91,6 +91,15 @@ async def post_submit_availability(user_id: int = Form(...), availability: str =
 
 @app.get("/groups/{group_id}/best-times")
 def get_best_times(group_id: int, db: Session = Depends(get_db)):
+    """
+    Endpoint to get the best times for a specific group.
+    
+    Args:
+        group_id (int): The ID of the group. This is a path parameter, not a query string.
+        
+    Returns:
+        dict: A dictionary containing the best times for the group.
+    """
     group = db.query(Group).filter(Group.id == group_id).first()
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
@@ -156,6 +165,15 @@ async def join_group(
     db.refresh(db_user)
     logger.info(f"User {display_name} joined group with invite code: {invite_code}")
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+@app.get("/groups")
+async def get_groups(request: Request, db: Session = Depends(get_db)):
+    """
+    Simple testing page for viewing created groups.
+    """
+    groups = db.query(Group).all()
+    logger.info("Groups listing page loaded")
+    return templates.TemplateResponse(request, "groups.html", {"request": request, "groups": groups})
 
 def parse_time_slots(availability_str):
     time_slots = []
