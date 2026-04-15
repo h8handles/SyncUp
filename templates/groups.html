@@ -14,6 +14,7 @@
         <td>{{ group.id }}</td>
         <td>{{ group.name }}</td>
         <td>{{ group.invite_code }}</td>
+        <!-- Best times link using the actual group id -->
         <td><a href="/groups/{{ group.id }}/best-times" style="text-decoration: none; color: black;">View Best Times</a></td>
     </tr>
     {% endfor %}
