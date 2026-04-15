@@ -8,6 +8,11 @@ from fastapi.templating import Jinja2Templates
 import re
 import secrets
 import string
+import logging
+
+# Configure simple INFO-level logging for MVP debugging and route visibility
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,6 +22,7 @@ app = FastAPI()
 
 @app.get("/")
 async def read_root(request: Request):
+    logger.info("Homepage loaded")
     return templates.TemplateResponse(request, "index.html", {"request": request})
 
 @app.get("/health")
@@ -32,10 +38,12 @@ def create_group(group: GroupCreate, db: Session = Depends(get_db)):
     db.add(db_group)
     db.commit()
     db.refresh(db_group)
+    logger.info(f"Group created: {db_group.name} with invite code: {db_group.invite_code}")
     return db_group
 
 @app.get("/create-group")
 async def get_create_group(request: Request):
+    logger.info("Create group page loaded")
     return templates.TemplateResponse(request, "create_group.html", {"request": request})
 
 @app.post("/create-group")  # Ensure this route is correctly defined
@@ -47,8 +55,10 @@ async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)
         db.add(new_group)
         db.commit()
         db.refresh(new_group)
+        logger.info(f"Group created: {new_group.name} with invite code: {new_group.invite_code}")
         return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     except Exception as e:
+        logger.error(f"Error creating group: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @app.get("/add-member")
@@ -62,6 +72,7 @@ async def post_add_member(username: str = Form(...), group_id: int = Form(...), 
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    logger.info(f"User created: {db_user.username} in group: {group_id}")
     return {"status": "User added successfully"}
 
 @app.get("/submit-availability")
@@ -75,6 +86,7 @@ async def post_submit_availability(user_id: int = Form(...), availability: str =
     db.add(db_availability)
     db.commit()
     db.refresh(db_availability)
+    logger.info(f"Availability submitted for user: {user_id} with timeslots: {availability}")
     return {"status": "Availability submitted successfully"}
 
 @app.get("/groups/{group_id}/best-times")
@@ -104,16 +116,19 @@ def get_best_times(group_id: int, db: Session = Depends(get_db)):
         })
     
     best_times.sort(key=lambda x: (-len(x['users_available']), -x['attendance_score']))
+    logger.info(f"Best times calculated for group {group_id}: {best_times}")
     return {"best_times": best_times}
 
 @app.get("/display-best-times")
 async def get_display_best_times(request: Request, db: Session = Depends(get_db)):
     groups = db.query(Group).all()
+    logger.info("Display best times page loaded")
     return templates.TemplateResponse(request, "display_best_times.html", {"request": request, "groups": groups})
 
 @app.get("/groups/join")
 async def get_join_group(request: Request):
     """Render the join group form page."""
+    logger.info("Join group page loaded")
     return templates.TemplateResponse(
         request,
         "join_group.html",
@@ -132,13 +147,14 @@ async def join_group(
     """
     group = db.query(Group).filter(Group.invite_code == invite_code).first()
     if not group:
+        logger.warning(f"Invalid invite code submitted: {invite_code}")
         return templates.TemplateResponse(request, "join_group.html", {"request": request, "error": "Invalid invite code"})
     
     db_user = User(username=display_name, group_id=group.id)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    
+    logger.info(f"User {display_name} joined group with invite code: {invite_code}")
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 def parse_time_slots(availability_str):
