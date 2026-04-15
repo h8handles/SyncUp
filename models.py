@@ -7,6 +7,7 @@ class Group(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
+    invite_code = Column(String, unique=True, index=True, nullable=False)  # New field for invite code
 
 class User(Base):
     __tablename__ = 'users'

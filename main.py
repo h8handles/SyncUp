@@ -6,6 +6,8 @@ from models import Base, Group, User, Availability
 from schemas import GroupCreate
 from fastapi.templating import Jinja2Templates
 import re
+import secrets
+import string
 
 Base.metadata.create_all(bind=engine)
 
@@ -23,7 +25,10 @@ def read_health():
 
 @app.post("/groups/", response_model=GroupCreate)
 def create_group(group: GroupCreate, db: Session = Depends(get_db)):
-    db_group = Group(name=group.name)
+    # Generate a unique invite code
+    invite_code = generate_invite_code(db)
+    
+    db_group = Group(name=group.name, invite_code=invite_code)  # Assign the generated invite code
     db.add(db_group)
     db.commit()
     db.refresh(db_group)
@@ -37,6 +42,8 @@ async def get_create_group(request: Request):
 async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)):
     try:
         new_group = Group(name=name)
+        invite_code = generate_invite_code(db)  # Generate a unique invite code
+        new_group.invite_code = invite_code  # Assign the generated invite code
         db.add(new_group)
         db.commit()
         db.refresh(new_group)
@@ -106,19 +113,16 @@ async def get_display_best_times(request: Request, db: Session = Depends(get_db)
 
 @app.post("/groups/join")
 async def join_group(display_name: str = Form(...), invite_code: str = Form(...), db: Session = Depends(get_db)):
-    group = db.query(Group).filter(Group.name == invite_code).first()
+    group = db.query(Group).filter(Group.invite_code == invite_code).first()
     if not group:
-        raise HTTPException(status_code=404, detail="Invalid invite code")
+        return templates.TemplateResponse(request, "join_group.html", {"request": request, "error": "Invalid invite code"})
     
     db_user = User(username=display_name, group_id=group.id)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     
-    return {
-        "group": {"id": group.id, "name": group.name},
-        "user": {"id": db_user.id, "username": db_user.username}
-    }
+    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 def parse_time_slots(availability_str):
     time_slots = []
@@ -126,3 +130,21 @@ def parse_time_slots(availability_str):
         start, end = match.groups()
         time_slots.append(f"{start}-{end}")
     return time_slots
+
+def generate_invite_code(db: Session) -> str:
+    """
+    Generate a unique invite code for a new group.
+    
+    Args:
+        db (Session): The database session to check for existing invite codes.
+        
+    Returns:
+        str: A unique invite code.
+    """
+    while True:
+        # Generate a random 6-character alphanumeric string
+        invite_code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+        # Check if the generated invite code already exists
+        existing_group = db.query(Group).filter(Group.invite_code == invite_code).first()
+        if not existing_group:
+            return invite_code
