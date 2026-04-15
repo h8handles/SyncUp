@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Group, User, Availability
+from models import Group
 from schemas import GroupCreate
 
 app = FastAPI()
@@ -27,14 +27,14 @@ def create_group(group: GroupCreate, db: Session = Depends(get_db)):
 async def get_create_group(request: Request):
     return {"request": request}
 
-@app.post("/create-group")  # Add this new route
+@app.post("/create-group")  # Ensure this route is correctly defined
 async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)):
     try:
-        new_group = Group(name=name, invite_code="generate_invite_code_here")  # Replace "generate_invite_code_here" with actual logic to generate invite code
+        new_group = Group(name=name)
         db.add(new_group)
         db.commit()
         db.refresh(new_group)
-        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
