@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}SyncUp{% endblock %}</title>
+    <script>
+        (function () {
+            const storageKey = "syncup-theme";
+            const savedTheme = localStorage.getItem(storageKey);
+            const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            const theme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : systemTheme;
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.style.colorScheme = theme;
+        })();
+    </script>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -22,6 +32,17 @@
                     <a class="nav-link" href="/submit-availability">Availability</a>
                     <a class="nav-link" href="/display-best-times">Best Times</a>
                 </nav>
+                <button
+                    class="theme-toggle"
+                    type="button"
+                    id="theme-toggle"
+                    aria-label="Toggle color theme"
+                    aria-pressed="false"
+                >
+                    <span class="theme-toggle-icon" aria-hidden="true">Mode</span>
+                    <span class="theme-toggle-text">Theme</span>
+                    <span class="theme-toggle-mode" id="theme-toggle-mode">Light</span>
+                </button>
             </div>
         </header>
         <main class="page-grid">
@@ -29,5 +50,40 @@
             {% endblock %}
         </main>
     </div>
+    <script>
+        (function () {
+            const storageKey = "syncup-theme";
+            const root = document.documentElement;
+            const toggle = document.getElementById("theme-toggle");
+            const toggleMode = document.getElementById("theme-toggle-mode");
+            const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+            function applyTheme(theme, persist) {
+                root.dataset.theme = theme;
+                root.style.colorScheme = theme;
+                toggle?.setAttribute("aria-pressed", String(theme === "dark"));
+                if (toggleMode) {
+                    toggleMode.textContent = theme === "dark" ? "Dark" : "Light";
+                }
+                if (persist) {
+                    localStorage.setItem(storageKey, theme);
+                }
+            }
+
+            toggle?.addEventListener("click", function () {
+                const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
+                applyTheme(nextTheme, true);
+            });
+
+            mediaQuery.addEventListener("change", function (event) {
+                if (!localStorage.getItem(storageKey)) {
+                    applyTheme(event.matches ? "dark" : "light", false);
+                }
+            });
+
+            applyTheme(root.dataset.theme || "light", false);
+        })();
+    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>
