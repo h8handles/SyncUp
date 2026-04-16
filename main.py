@@ -95,13 +95,14 @@ async def post_submit_availability(
 ):
     """
     Handle the submit availability form submission and save the record.
+    
+    Note: Form field names are mapped to the model's actual column names.
     """
     try:
+        # Map form fields to the correct model fields
         new_availability = Availability(
             user_id=user_id,
-            day=day,
-            start_time=start_time,
-            end_time=end_time,
+            availability=f"{start_time}-{end_time}",
             status_value=status_value
         )
         db.add(new_availability)

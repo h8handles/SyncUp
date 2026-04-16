@@ -22,6 +22,7 @@ class Availability(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    availability = Column(String)
+    availability = Column(String)  # Correct field name
+    status_value = Column(String)  # Correct field name
 
 Group.users = relationship("User", order_by=User.id, back_populates="group")
