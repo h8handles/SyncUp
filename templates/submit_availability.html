@@ -9,8 +9,22 @@
         <option value="{{ user.id }}">{{ user.username }}</option>
         {% endfor %}
     </select>
-    <label for="availability">Availability (e.g., 09:00-12:00, 14:00-18:00):</label>
-    <input type="text" id="availability" name="availability" required>
+    <br><br>
+    <label for="day">Day (e.g., Monday, Tuesday):</label>
+    <input type="text" id="day" name="day" required>
+    <br><br>
+    <label for="start_time">Start Time (e.g., 09:00):</label>
+    <input type="time" id="start_time" name="start_time" required>
+    <br><br>
+    <label for="end_time">End Time (e.g., 12:00):</label>
+    <input type="time" id="end_time" name="end_time" required>
+    <br><br>
+    <label for="status_value">Status:</label>
+    <select id="status_value" name="status_value" required>
+        <option value="available">Available</option>
+        <option value="unavailable">Unavailable</option>
+    </select>
+    <br><br>
     <button type="submit">Submit Availability</button>
 </form>
 {% endblock %}

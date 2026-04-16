@@ -55,7 +55,7 @@ async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)
         db.add(new_group)
         db.commit()
         db.refresh(new_group)
-        logger.info(f"Group created: {new_group.name} with invite code: {new_group.invite_code}")
+        logger.info(f"Group created: {new_group.name} with invite code: {db_group.invite_code}")
         return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     except Exception as e:
         logger.error(f"Error creating group: {e}")
@@ -77,17 +77,41 @@ async def post_add_member(username: str = Form(...), group_id: int = Form(...), 
 
 @app.get("/submit-availability")
 async def get_submit_availability(request: Request, db: Session = Depends(get_db)):
+    """
+    Render the submit availability form page.
+    """
     users = db.query(User).all()
+    logger.info("Submit availability page loaded")
     return templates.TemplateResponse(request, "submit_availability.html", {"request": request, "users": users})
 
-@app.post("/availabilities/")
-async def post_submit_availability(user_id: int = Form(...), availability: str = Form(...), db: Session = Depends(get_db)):
-    db_availability = Availability(user_id=user_id, availability=availability)
-    db.add(db_availability)
-    db.commit()
-    db.refresh(db_availability)
-    logger.info(f"Availability submitted for user: {user_id} with timeslots: {availability}")
-    return {"status": "Availability submitted successfully"}
+@app.post("/submit-availability")
+async def post_submit_availability(
+    user_id: int = Form(...),
+    day: str = Form(...),
+    start_time: str = Form(...),
+    end_time: str = Form(...),
+    status_value: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Handle the submit availability form submission and save the record.
+    """
+    try:
+        new_availability = Availability(
+            user_id=user_id,
+            day=day,
+            start_time=start_time,
+            end_time=end_time,
+            status_value=status_value
+        )
+        db.add(new_availability)
+        db.commit()
+        db.refresh(new_availability)
+        logger.info(f"Availability submitted for user {user_id} on {day} from {start_time} to {end_time} with status {status_value}")
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as e:
+        logger.error(f"Error submitting availability: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @app.get("/groups/{group_id}/best-times")
 def get_best_times(group_id: int, db: Session = Depends(get_db)):
