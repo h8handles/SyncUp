@@ -1,30 +1,74 @@
 {% extends "base.html" %}
 
+{% block title %}Submit Availability | SyncUp{% endblock %}
+
 {% block content %}
-<h1>Submit Availability</h1>
-<form method="post">
-    <label for="user_id">User:</label>
-    <select id="user_id" name="user_id" required>
-        {% for user in users %}
-        <option value="{{ user.id }}">{{ user.username }}</option>
-        {% endfor %}
-    </select>
-    <br><br>
-    <label for="day">Day (e.g., Monday, Tuesday):</label>
-    <input type="text" id="day" name="day" required>
-    <br><br>
-    <label for="start_time">Start Time (e.g., 09:00):</label>
-    <input type="time" id="start_time" name="start_time" required>
-    <br><br>
-    <label for="end_time">End Time (e.g., 12:00):</label>
-    <input type="time" id="end_time" name="end_time" required>
-    <br><br>
-    <label for="status_value">Status:</label>
-    <select id="status_value" name="status_value" required>
-        <option value="available">Available</option>
-        <option value="unavailable">Unavailable</option>
-    </select>
-    <br><br>
-    <button type="submit">Submit Availability</button>
-</form>
+<section class="page-header">
+    <h1>Submit availability</h1>
+    <p>Choose a member, add the day, and enter a time range so SyncUp can calculate group overlap.</p>
+</section>
+
+{% if users %}
+<section class="layout-columns">
+    <div class="form-card">
+        <form method="post" class="form-grid">
+            <div class="field">
+                <label for="user_id">Member</label>
+                <select id="user_id" name="user_id" required>
+                    {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="day">Day</label>
+                <input type="text" id="day" name="day" placeholder="Example: Monday" required>
+            </div>
+
+            <div class="field">
+                <label for="start_time">Start time</label>
+                <input type="time" id="start_time" name="start_time" required>
+            </div>
+
+            <div class="field">
+                <label for="end_time">End time</label>
+                <input type="time" id="end_time" name="end_time" required>
+            </div>
+
+            <div class="field">
+                <label for="status_value">Status</label>
+                <select id="status_value" name="status_value" required>
+                    <option value="available">Available</option>
+                    <option value="unavailable">Unavailable</option>
+                </select>
+                <p class="field-hint">The current backend stores the time range and status for each submission.</p>
+            </div>
+
+            <div class="form-actions">
+                <button class="button" type="submit">Save Availability</button>
+                <a class="button-ghost" href="/display-best-times">Review Best Times</a>
+            </div>
+        </form>
+    </div>
+
+    <aside class="info-card">
+        <h2 class="section-title">Tips for clean availability data</h2>
+        <ul class="list-clean">
+            <li>Use a consistent member selection for repeat submissions.</li>
+            <li>Enter times in the clearest available window for that day.</li>
+            <li>Submit for each member before reviewing overlap results.</li>
+        </ul>
+    </aside>
+</section>
+{% else %}
+<section class="empty-state">
+    <h2>No members available yet</h2>
+    <p>Create a group and have someone join first, then return here to submit availability.</p>
+    <div class="stack-actions">
+        <a class="button" href="/create-group">Create Group</a>
+        <a class="button-secondary" href="/groups/join">Join Group</a>
+    </div>
+</section>
+{% endif %}
 {% endblock %}

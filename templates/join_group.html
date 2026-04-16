@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Join Group | SyncUp{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Join a group</h1>
+    <p>Enter your display name and the group invite code to start contributing availability.</p>
+</section>
+
+<section class="layout-columns">
+    <div class="form-card">
+        {% if error %}
+        <div class="status-message error">{{ error }}</div>
+        {% endif %}
+        <form method="post" action="/groups/join" class="form-grid">
+            <div class="field">
+                <label for="display_name">Your name</label>
+                <input type="text" id="display_name" name="display_name" placeholder="Example: Jordan Lee" required>
+            </div>
+
+            <div class="field">
+                <label for="invite_code">Invite code</label>
+                <input type="text" id="invite_code" name="invite_code" placeholder="Example: A1B2C3" required>
+                <p class="field-hint">Invite codes are provided when a group is created.</p>
+            </div>
+
+            <div class="form-actions">
+                <button class="button" type="submit">Join Group</button>
+                <a class="button-ghost" href="/groups">View Groups</a>
+            </div>
+        </form>
+    </div>
+
+    <aside class="info-card">
+        <h2 class="section-title">Before you join</h2>
+        <ul class="list-clean">
+            <li>Use the same name you want other members to recognize.</li>
+            <li>Make sure the invite code matches exactly.</li>
+            <li>After joining, head to availability submission to add your time window.</li>
+        </ul>
+    </aside>
+</section>
+{% endblock %}

@@ -1,16 +1,37 @@
 {% extends "base.html" %}
 
+{% block title %}Add Member | SyncUp{% endblock %}
+
 {% block content %}
-<h1>Add Member</h1>
-<form method="post">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required>
-    <label for="group_id">Group:</label>
-    <select id="group_id" name="group_id" required>
-        {% for group in groups %}
-        <option value="{{ group.id }}">{{ group.name }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit">Add Member</button>
-</form>
+<section class="page-header">
+    <h1>Add a member</h1>
+    <p>This utility page lets you add a member directly to an existing group.</p>
+</section>
+
+<section class="layout-columns">
+    <div class="form-card">
+        <form method="post" action="/users/" class="form-grid">
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="field">
+                <label for="group_id">Group</label>
+                <select id="group_id" name="group_id" required>
+                    {% for group in groups %}
+                    <option value="{{ group.id }}">{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-actions">
+                <button class="button" type="submit">Add Member</button>
+                <a class="button-ghost" href="/groups">Back to Groups</a>
+            </div>
+        </form>
+    </div>
+
+    <aside class="info-card">
+        <p class="helper-note">This utility form posts directly to the existing member creation route.</p>
+    </aside>
+</section>
 {% endblock %}

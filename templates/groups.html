@@ -1,31 +1,76 @@
 {% extends "base.html" %}
 
-{% block content %}
-<h1>Group Listing</h1>
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Invite Code</th>
-        <th>Best Times</th>
-    </tr>
-    {% for group in groups %}
-    <tr>
-        <td>{{ group.id }}</td>
-        <td>{{ group.name }}</td>
-        <td>{{ group.invite_code }}</td>
-        <!-- Best times link using the actual group id -->
-        <td><a href="/groups/{{ group.id }}/best-times" style="text-decoration: none; color: black;">View Best Times</a></td>
-    </tr>
-    {% endfor %}
-</table>
+{% block title %}Groups | SyncUp{% endblock %}
 
-<div style="margin-top: 20px;">
-    <a href="/" style="text-decoration: none; color: black;">
-        <button>Back to Home</button>
-    </a>
-    <a href="/submit-availability" style="text-decoration: none; color: black; margin-right: 10px;">
-        <button>Submit Availability</button>
-    </a>
-</div>
+{% block content %}
+<section class="page-header">
+    <h1>Groups</h1>
+    <p>Browse existing groups, copy invite codes when needed, and open each group's best-times view.</p>
+</section>
+
+{% if groups %}
+<section class="page-grid">
+    <div class="table-shell">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">All groups</h2>
+                <p class="muted-text">Each group links directly to its best-times page.</p>
+            </div>
+            <div class="inline-actions">
+                <a class="button-secondary" href="/create-group">Create Group</a>
+                <a class="button-ghost" href="/submit-availability">Submit Availability</a>
+            </div>
+        </div>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Invite Code</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                    <tr>
+                        <td>{{ group.id }}</td>
+                        <td>{{ group.name }}</td>
+                        <td><span class="pill">{{ group.invite_code }}</span></td>
+                        <td><a class="button-secondary" href="/groups/{{ group.id }}/best-times">View Best Times</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="group-list">
+        {% for group in groups %}
+        <article class="group-card">
+            <div>
+                <h3>{{ group.name }}</h3>
+                <p class="section-copy">Group ID {{ group.id }}</p>
+                <div class="group-meta">
+                    <span class="pill">Invite Code: {{ group.invite_code }}</span>
+                    <span class="pill pill-neutral">Ready for availability collection</span>
+                </div>
+            </div>
+            <div class="stack-actions">
+                <a class="button" href="/groups/{{ group.id }}/best-times">Open Best Times</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+<section class="empty-state">
+    <h2>No groups yet</h2>
+    <p>Create the first group to start inviting members and collecting availability.</p>
+    <div class="stack-actions">
+        <a class="button" href="/create-group">Create Group</a>
+        <a class="button-secondary" href="/">Back Home</a>
+    </div>
+</section>
+{% endif %}
 {% endblock %}

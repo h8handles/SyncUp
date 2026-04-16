@@ -1,23 +1,101 @@
 {% extends "base.html" %}
 
+{% block title %}Best Times | SyncUp{% endblock %}
+
 {% block content %}
-<h1>Display Best Overlap Times</h1>
-<form method="get" action="/groups/{group_id}/best-times">
-    <label for="group_id">Group:</label>
-    <select id="group_id" name="group_id" required>
-        {% for group in groups %}
-        <option value="{{ group.id }}">{{ group.name }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit">Get Best Times</button>
-</form>
+<section class="page-header">
+    <h1>Best times</h1>
+    <p>Select a group to review overlap windows and see which members are available for each option.</p>
+</section>
+
+<section class="layout-columns">
+    <div class="form-card">
+        {% if groups %}
+        <form id="best-times-form" class="form-grid">
+            <div class="field">
+                <label for="group_id">Group</label>
+                <select id="group_id" name="group_id" required>
+                    {% for group in groups %}
+                    <option value="{{ group.id }}" {% if selected_group_id == group.id %}selected{% endif %}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+                <p class="field-hint">The selected group opens its browser-friendly best-times page.</p>
+            </div>
+            <div class="form-actions">
+                <button class="button" type="submit">Show Best Times</button>
+                <a class="button-ghost" href="/groups">Browse Groups</a>
+            </div>
+        </form>
+        {% else %}
+        <div class="empty-state">
+            <h2>No groups available yet</h2>
+            <p>Create a group first, then return here once you have members and availability data.</p>
+            <div class="stack-actions">
+                <a class="button" href="/create-group">Create Group</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <aside class="info-card">
+        {% if selected_group_name %}
+        <h2 class="section-title">{{ selected_group_name }}</h2>
+        <p class="helper-note">These results are calculated from submitted availability records for the selected group.</p>
+        {% else %}
+        <h2 class="section-title">How to use this page</h2>
+        <ul class="list-clean">
+            <li>Select a group from the menu.</li>
+            <li>Open the best-times view in the browser.</li>
+            <li>Review the strongest overlap windows and available members.</li>
+        </ul>
+        {% endif %}
+    </aside>
+</section>
+
+{% if message %}
+<section class="empty-state">
+    <h3>Nothing to show yet</h3>
+    <p>{{ message }}</p>
+    <div class="stack-actions">
+        <a class="button-secondary" href="/submit-availability">Submit Availability</a>
+    </div>
+</section>
+{% endif %}
 
 {% if best_times %}
-<h2>Best Overlap Times:</h2>
-<ul>
-    {% for time in best_times %}
-    <li>{{ time.timeslot }} - Users Available: {{ time.users_available }}, Attendance Score: {{ time.attendance_score }}</li>
-    {% endfor %}
-</ul>
+<section class="surface">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Top overlap windows</h2>
+            <p class="muted-text">Higher attendance scores indicate better group coverage.</p>
+        </div>
+    </div>
+    <div class="timeslot-grid">
+        {% for time in best_times %}
+        <article class="timeslot-card">
+            <div class="timeslot-head">
+                <div>
+                    <div class="timeslot-value">{{ time.timeslot }}</div>
+                    <p class="page-footnote">Attendance score: {{ "%.0f"|format(time.attendance_score * 100) }}%</p>
+                </div>
+                <span class="pill">{{ time.user_names|length }} member{% if time.user_names|length != 1 %}s{% endif %} available</span>
+            </div>
+            <div class="user-list">
+                {% for user_name in time.user_names %}
+                <span class="pill pill-neutral">{{ user_name }}</span>
+                {% endfor %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
 {% endif %}
+
+<script>
+document.getElementById("best-times-form")?.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const groupId = document.getElementById("group_id").value;
+    window.location.href = "/groups/" + encodeURIComponent(groupId) + "/best-times";
+});
+</script>
 {% endblock %}

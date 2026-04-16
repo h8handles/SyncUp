@@ -1,21 +1,69 @@
 {% extends "base.html" %}
 
-{% block content %}
-<h1>SyncUp</h1>
-<p>Find the best time for everyone</p>
+{% block title %}SyncUp | Smarter Group Scheduling{% endblock %}
 
-<div style="margin-top: 20px;">
-    <a href="/create-group" style="text-decoration: none; color: black; margin-right: 10px;">
-        <button>Create Group</button>
-    </a>
-    <a href="/groups/join" style="text-decoration: none; color: black; margin-right: 10px;">
-        <button>Join Group</button>
-    </a>
-    <a href="/submit-availability" style="text-decoration: none; color: black; margin-right: 10px;">
-        <button>Submit Availability</button>
-    </a>
-    <a href="/display-best-times" style="text-decoration: none; color: black;">
-        <button>View Schedule</button>
-    </a>
-</div>
+{% block content %}
+<section class="hero">
+    <div class="hero-panel">
+        <p class="pill">Group scheduling made simple</p>
+        <h1>Find the best time for everyone without chasing messages.</h1>
+        <p>
+            Create a group, invite people with a code, collect availability, and review overlap times in one place.
+            SyncUp keeps the flow lightweight while making the next step obvious.
+        </p>
+        <div class="hero-actions">
+            <a class="button" href="/create-group">Create a Group</a>
+            <a class="button-secondary" href="/groups/join">Join with Invite Code</a>
+            <a class="button-ghost" href="/display-best-times">View Best Times</a>
+        </div>
+    </div>
+    <div class="hero-side">
+        <div class="stat-panel">
+            <div class="stat-label">Typical workflow</div>
+            <div class="stat-value">3 steps</div>
+            <ul class="list-clean">
+                <li>Create or join a group.</li>
+                <li>Submit each member's availability.</li>
+                <li>Review the overlap and pick a time.</li>
+            </ul>
+        </div>
+        <div class="surface">
+            <h3 class="section-title">Everything stays connected</h3>
+            <p class="section-copy">
+                Each page uses the same navigation and structure, so moving from setup to scheduling feels consistent.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="surface">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">What you can do in SyncUp</h2>
+            <p class="muted-text">The core actions are organized around the real scheduling flow.</p>
+        </div>
+    </div>
+    <div class="card-grid">
+        <div class="feature-card">
+            <h3>Create a group</h3>
+            <p class="section-copy">Start a new scheduling space and generate an invite code for others.</p>
+            <a class="button-secondary" href="/create-group">Start a Group</a>
+        </div>
+        <div class="feature-card">
+            <h3>Join a group</h3>
+            <p class="section-copy">Use an invite code to join an existing group without extra setup.</p>
+            <a class="button-secondary" href="/groups/join">Join Now</a>
+        </div>
+        <div class="feature-card">
+            <h3>Submit availability</h3>
+            <p class="section-copy">Add time windows for a member so the group can see possible overlap.</p>
+            <a class="button-secondary" href="/submit-availability">Add Availability</a>
+        </div>
+        <div class="feature-card">
+            <h3>Review best times</h3>
+            <p class="section-copy">Inspect each group and see the strongest overlap candidates.</p>
+            <a class="button-secondary" href="/groups">Browse Groups</a>
+        </div>
+    </div>
+</section>
 {% endblock %}

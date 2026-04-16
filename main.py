@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from database import engine, get_db
 from models import Base, Group, User, Availability
@@ -19,6 +20,7 @@ Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory="templates")
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def read_root(request: Request):
@@ -55,7 +57,7 @@ async def post_create_group(name: str = Form(...), db: Session = Depends(get_db)
         db.add(new_group)
         db.commit()
         db.refresh(new_group)
-        logger.info(f"Group created: {new_group.name} with invite code: {db_group.invite_code}")
+        logger.info(f"Group created: {new_group.name} with invite code: {new_group.invite_code}")
         return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     except Exception as e:
         logger.error(f"Error creating group: {e}")
@@ -115,7 +117,7 @@ async def post_submit_availability(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @app.get("/groups/{group_id}/best-times")
-def get_best_times(group_id: int, db: Session = Depends(get_db)):
+def get_best_times(request: Request, group_id: int, db: Session = Depends(get_db)):
     """
     Endpoint to get the best times for a specific group.
     
@@ -123,35 +125,64 @@ def get_best_times(group_id: int, db: Session = Depends(get_db)):
         group_id (int): The ID of the group. This is a path parameter, not a query string.
         
     Returns:
-        dict: A dictionary containing the best times for the group.
+        TemplateResponse: Rendered best times page for the selected group.
     """
     group = db.query(Group).filter(Group.id == group_id).first()
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
-    
-    availabilities = db.query(Availability).filter(Availability.user_id.in_([user.id for user in group.users])).all()
-    
+
+    groups = db.query(Group).all()
+    group_users = {user.id: user.username for user in group.users}
+    availabilities = db.query(Availability).filter(Availability.user_id.in_(list(group_users.keys()))).all()
+
     availability_dict = {}
     for availability in availabilities:
         if availability.user_id not in availability_dict:
             availability_dict[availability.user_id] = []
         availability_dict[availability.user_id].extend(parse_time_slots(availability.availability))
-    
+
+    if not availability_dict:
+        logger.info(f"No availability data found for group {group_id}")
+        return templates.TemplateResponse(
+            request,
+            "display_best_times.html",
+            {
+                "request": request,
+                "groups": groups,
+                "selected_group_id": group_id,
+                "selected_group_name": group.name,
+                "best_times": [],
+                "message": "No availability has been submitted for this group yet."
+            }
+        )
+
     all_timeslots = set.intersection(*[set(timeslots) for timeslots in availability_dict.values()])
     best_times = []
-    
+
     for timeslot in all_timeslots:
         users_available = [user_id for user_id, timeslots in availability_dict.items() if timeslot in timeslots]
         attendance_score = len(users_available) / len(group.users)
         best_times.append({
             "timeslot": timeslot,
             "users_available": users_available,
+            "user_names": [group_users[user_id] for user_id in users_available if user_id in group_users],
             "attendance_score": attendance_score
         })
-    
+
     best_times.sort(key=lambda x: (-len(x['users_available']), -x['attendance_score']))
     logger.info(f"Best times calculated for group {group_id}: {best_times}")
-    return {"best_times": best_times}
+    return templates.TemplateResponse(
+        request,
+        "display_best_times.html",
+        {
+            "request": request,
+            "groups": groups,
+            "selected_group_id": group_id,
+            "selected_group_name": group.name,
+            "best_times": best_times,
+            "message": "No overlapping time slots found for this group." if not best_times else None
+        }
+    )
 
 @app.get("/display-best-times")
 async def get_display_best_times(request: Request, db: Session = Depends(get_db)):

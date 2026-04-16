@@ -1,10 +1,35 @@
 {% extends "base.html" %}
 
+{% block title %}Create Group | SyncUp{% endblock %}
+
 {% block content %}
-<h1>Create Group</h1>
-<form method="post">
-    <label for="name">Group Name:</label>
-    <input type="text" id="name" name="name" required>
-    <button type="submit">Create Group</button>
-</form>
+<section class="page-header">
+    <h1>Create a group</h1>
+    <p>Set up a new scheduling group and share its invite code with your members after creation.</p>
+</section>
+
+<section class="layout-columns">
+    <div class="form-card">
+        <form method="post" class="form-grid">
+            <div class="field">
+                <label for="name">Group name</label>
+                <input type="text" id="name" name="name" placeholder="Example: Product Team Weekly Sync" required>
+                <p class="field-hint">Use a clear group name so members can recognize it immediately.</p>
+            </div>
+            <div class="form-actions">
+                <button class="button" type="submit">Create Group</button>
+                <a class="button-ghost" href="/">Back to Home</a>
+            </div>
+        </form>
+    </div>
+
+    <aside class="info-card">
+        <h2 class="section-title">What happens next</h2>
+        <ul class="list-clean">
+            <li>SyncUp creates the group and generates a unique invite code.</li>
+            <li>Members can join the group from the join page.</li>
+            <li>Once people submit availability, you can review overlap times.</li>
+        </ul>
+    </aside>
+</section>
 {% endblock %}

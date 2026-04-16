@@ -2,10 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Scheduling App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SyncUp{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    {% block content %}
-    {% endblock %}
+    <div class="site-shell">
+        <header class="site-header">
+            <div class="nav-bar">
+                <a href="/" class="brand">
+                    <span class="brand-mark">SyncUp</span>
+                    <span class="brand-copy">Coordinate groups without the scheduling guesswork.</span>
+                </a>
+                <nav class="nav-links" aria-label="Primary">
+                    <a class="nav-link" href="/">Home</a>
+                    <a class="nav-link" href="/create-group">Create Group</a>
+                    <a class="nav-link" href="/groups/join">Join Group</a>
+                    <a class="nav-link" href="/groups">Groups</a>
+                    <a class="nav-link" href="/submit-availability">Availability</a>
+                    <a class="nav-link" href="/display-best-times">Best Times</a>
+                </nav>
+            </div>
+        </header>
+        <main class="page-grid">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
 </body>
 </html>
